@@ -1,4 +1,4 @@
-/* ========== CSS VARIABLES ========== */
+/* CSS VARIABLES */
 :root {
     --primary: #6C63FF;
     --primary-hover: #5A52E0;
@@ -15,7 +15,7 @@
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* ========== RESET & BASE ========== */
+/* RESET & BASE */
 * {
     margin: 0;
     padding: 0;
@@ -44,7 +44,7 @@ ul {
     list-style: none;
 }
 
-/* ========== HEADER ========== */
+/* HEADER */
 header {
     display: flex;
     justify-content: space-between;
@@ -73,7 +73,7 @@ header nav a:hover {
     color: var(--primary);
 }
 
-/* ========== HERO SECTION ========== */
+/* HERO SECTION */
 .hero {
     text-align: center;
     padding: 80px 20px;
@@ -130,7 +130,7 @@ header nav a:hover {
     border-color: var(--primary);
 }
 
-/* ========== HAMBURGER MENU ========== */
+/* HAMBURGER MENU */
 .menu-btn {
     display: none;
     background: none;
@@ -140,7 +140,7 @@ header nav a:hover {
     cursor: pointer;
 }
 
-/* ========== FEATURED POSTS ========== */
+/* FEATURED POSTS */
 .featured-posts {
     padding: 60px 40px;
     display: flex;
@@ -203,7 +203,7 @@ header nav a:hover {
     font-size: 13px;
 }
 
-/* ========== FOOTER ========== */
+/* FOOTER */
 footer {
     text-align: center;
     padding: 40px 20px;
@@ -222,7 +222,7 @@ footer a:hover {
     color: var(--primary);
 }
 
-/* ========== SCROLL TO TOP ========== */
+/* SCROLL TO TOP */
 .scroll-top-btn {
     position: fixed;
     bottom: 32px;

@@ -1,8 +1,3 @@
-/* ========================================
-   DevBlog — script.js
-   ======================================== */
-
-/* ========== MOBILE MENU TOGGLE ========== */
 const menuBtn = document.querySelector('#menu-btn');
 const nav = document.querySelector('header nav');
 
@@ -10,7 +5,6 @@ menuBtn.addEventListener('click', () => {
     nav.classList.toggle('nav-open');
 });
 
-/* ========== LIVE SEARCH FILTER ========== */
 const searchInput = document.querySelector('#search-input');
 const postCards = document.querySelectorAll('.post-card');
 
@@ -27,7 +21,6 @@ searchInput.addEventListener('input', (e) => {
     });
 });
 
-/* ========== SCROLL TO TOP BUTTON ========== */
 const scrollBtn = document.querySelector('#scroll-top-btn');
 
 window.addEventListener('scroll', () => {
