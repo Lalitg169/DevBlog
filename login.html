@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DevBlog - Login to your account">
+    <title>Login — DevBlog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="logo">DevBlog</a>
+        <button id="menu-btn" class="menu-btn">&#9776;</button>
+        <nav>
+            <ul>
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#explore">Explore</a></li>
+                <li><a href="write.html">Write</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- LOGIN FORM -->
+        <section class="hero">
+            <h1>Welcome Back</h1>
+            <p>Login to continue to DevBlog</p>
+        </section>
+
+        <section class="form-section">
+            <form id="login-form" class="post-form">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Your username" required>
+
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Your password" required>
+
+                <button type="submit" class="btn" data-mode="login">Login</button>
+            </form>
+            <p id="login-message"></p>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2026 DevBlog. All rights reserved.</p>
+        <nav>
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#privacy">Privacy</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </footer>
+
+    <!-- SCROLL TO TOP -->
+    <button id="scroll-top-btn" class="scroll-top-btn">&#8679;</button>
+
+    <script src="script.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const loginForm = document.querySelector('#login-form');
+        const loginMessage = document.querySelector('#login-message');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.querySelector('#username').value;
+            const password = document.querySelector('#password').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    loginMessage.textContent = data.error || 'Login failed.';
+                    return;
+                }
+
+                localStorage.setItem('token', data.token);
+                loginMessage.textContent = `Welcome back, ${data.user.username}!`;
+            } catch (err) {
+                loginMessage.textContent = 'Could not reach the server.';
+            }
+        });
+    </script>
+</body>
+</html>

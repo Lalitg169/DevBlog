@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DevBlog - Write a new post">
+    <title>Write a Post — DevBlog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="logo">DevBlog</a>
+        <button id="menu-btn" class="menu-btn">&#9776;</button>
+        <nav>
+            <ul>
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#explore">Explore</a></li>
+                <li><a href="write.html">Write</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- WRITE FORM -->
+        <section class="hero">
+            <h1>Write a New Post</h1>
+            <p>Share your story with the DevBlog community</p>
+        </section>
+
+        <section class="form-section">
+            <form id="write-form" class="post-form">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" placeholder="Post title" required>
+
+                <label for="category">Category</label>
+                <input type="text" id="category" name="category" placeholder="e.g. Technology" required>
+
+                <label for="content">Content</label>
+                <textarea id="content" name="content" rows="8" placeholder="Write your post..."></textarea>
+
+                <button type="submit" class="btn">Publish Post</button>
+            </form>
+            <p id="write-message"></p>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2026 DevBlog. All rights reserved.</p>
+        <nav>
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#privacy">Privacy</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </footer>
+
+    <!-- SCROLL TO TOP -->
+    <button id="scroll-top-btn" class="scroll-top-btn">&#8679;</button>
+
+    <script src="script.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const writeForm = document.querySelector('#write-form');
+        const writeMessage = document.querySelector('#write-message');
+
+        writeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                writeMessage.textContent = 'Please log in before publishing a post.';
+                return;
+            }
+
+            const title = document.querySelector('#title').value;
+            const category = document.querySelector('#category').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/posts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ title, category }),
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    writeMessage.textContent = data.error || 'Could not publish post.';
+                    return;
+                }
+
+                writeMessage.textContent = 'Post published!';
+                writeForm.reset();
+            } catch (err) {
+                writeMessage.textContent = 'Could not reach the server.';
+            }
+        });
+    </script>
+</body>
+</html>
