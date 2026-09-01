@@ -2,10 +2,12 @@
   "name": "server",
   "version": "1.0.0",
   "description": "DevBlog backend API",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -16,10 +18,20 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.6.2",
+    "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
     "pg": "^8.23.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   }
 }
