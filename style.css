@@ -1,18 +1,19 @@
 /* CSS VARIABLES */
 :root {
-    --primary: #6C63FF;
-    --primary-hover: #5A52E0;
-    --bg-dark: #0f0f1a;
-    --bg-card: #1a1a2e;
-    --bg-card-hover: #222240;
-    --text-white: #ffffff;
-    --text-light: #c0c0d0;
-    --text-muted: #8888aa;
-    --accent-green: #00d4aa;
-    --accent-pink: #ff6b9d;
-    --border-color: #2a2a4a;
+    --primary: #5348C7;
+    --primary-hover: #3E349F;
+    --on-primary: #FBF8F2;
+    --bg: #F2EDE3;
+    --surface: #FAF6EE;
+    --surface-hover: #EFE8DA;
+    --text-strong: #1C1A17;
+    --text: #33302B;
+    --text-muted: #6B655C;
+    --accent-green: #0E7C63;
+    --accent-pink: #B4356B;
+    --border-color: #DCD3C3;
     --radius: 12px;
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow: 0 4px 20px rgba(28, 26, 23, 0.12);
 }
 
 /* RESET & BASE */
@@ -24,8 +25,8 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-dark);
-    color: var(--text-light);
+    background-color: var(--bg);
+    color: var(--text);
     line-height: 1.6;
 }
 
@@ -37,7 +38,7 @@ img {
 
 a {
     text-decoration: none;
-    color: var(--text-white);
+    color: var(--text-strong);
 }
 
 ul {
@@ -50,7 +51,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 20px 40px;
-    background-color: var(--bg-card);
+    background-color: var(--surface);
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -81,7 +82,7 @@ header nav a:hover {
 
 .hero h1 {
     font-size: 48px;
-    color: var(--text-white);
+    color: var(--text-strong);
     margin-bottom: 16px;
 }
 
@@ -94,7 +95,7 @@ header nav a:hover {
 .btn {
     display: inline-block;
     background: var(--primary);
-    color: var(--text-white);
+    color: var(--on-primary);
     padding: 14px 32px;
     border-radius: var(--radius);
     font-size: 16px;
@@ -114,8 +115,8 @@ header nav a:hover {
     padding: 14px 24px;
     border: 1px solid var(--border-color);
     border-radius: 50px;
-    background: var(--bg-card);
-    color: var(--text-white);
+    background: var(--surface);
+    color: var(--text-strong);
     font-size: 16px;
     font-family: 'Inter', sans-serif;
     outline: none;
@@ -135,7 +136,7 @@ header nav a:hover {
     display: none;
     background: none;
     border: none;
-    color: var(--text-white);
+    color: var(--text-strong);
     font-size: 28px;
     cursor: pointer;
 }
@@ -151,14 +152,14 @@ header nav a:hover {
 
 .featured-posts h2 {
     font-size: 32px;
-    color: var(--text-white);
+    color: var(--text-strong);
     margin-bottom: 32px;
     text-align: center;
     width: 100%;
 }
 
 .post-card {
-    background: var(--bg-card);
+    background: var(--surface);
     border-radius: var(--radius);
     overflow: hidden;
     border: 1px solid var(--border-color);
@@ -174,7 +175,7 @@ header nav a:hover {
 .category {
     display: inline-block;
     background: var(--primary);
-    color: var(--text-white);
+    color: var(--on-primary);
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
@@ -185,7 +186,7 @@ header nav a:hover {
 .post-card h3 {
     padding: 0 16px;
     font-size: 20px;
-    color: var(--text-white);
+    color: var(--text-strong);
     margin-top: 12px;
 }
 
@@ -211,7 +212,7 @@ header nav a:hover {
 }
 
 .post-form {
-    background: var(--bg-card);
+    background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 32px;
@@ -223,7 +224,7 @@ header nav a:hover {
 }
 
 .post-form label {
-    color: var(--text-light);
+    color: var(--text);
     font-size: 14px;
     font-weight: 600;
     margin-top: 12px;
@@ -234,8 +235,8 @@ header nav a:hover {
     padding: 12px 16px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    background: var(--bg-dark);
-    color: var(--text-white);
+    background: var(--bg);
+    color: var(--text-strong);
     font-size: 15px;
     font-family: 'Inter', sans-serif;
     outline: none;
@@ -287,7 +288,7 @@ footer a:hover {
     width: 48px;
     height: 48px;
     background: var(--primary);
-    color: var(--text-white);
+    color: var(--on-primary);
     border: none;
     border-radius: 50%;
     font-size: 24px;
@@ -318,7 +319,7 @@ footer a:hover {
         top: 70px;
         left: 0;
         right: 0;
-        background: var(--bg-card);
+        background: var(--surface);
         border-bottom: 1px solid var(--border-color);
         padding: 20px;
     }
