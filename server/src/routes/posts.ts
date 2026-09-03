@@ -7,6 +7,17 @@ import { PostRow, PostView, CommentRow, CommentView, CategoryRow, CountRow } fro
 
 const router = express.Router();
 
+const numericId = (label: string) => (req: Request, res: Response, next: NextFunction, value: string) => {
+    if (!/^\d+$/.test(value)) {
+        res.status(404).json({ success: false, error: `${label} not found.` });
+        return;
+    }
+    next();
+};
+
+router.param('id', numericId('Post'));
+router.param('commentId', numericId('Comment'));
+
 // $1 is always the viewing user's id (-1 when anonymous), so `liked` can be
 // resolved in the same round trip as the post itself.
 const POST_SELECT = `

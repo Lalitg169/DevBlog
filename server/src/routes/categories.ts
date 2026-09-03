@@ -7,6 +7,14 @@ import { CategoryRow } from '../types';
 
 const router = express.Router();
 
+router.param('id', (req: Request, res: Response, next: NextFunction, value: string) => {
+    if (!/^\d+$/.test(value)) {
+        res.status(404).json({ success: false, error: 'Category not found.' });
+        return;
+    }
+    next();
+});
+
 // GET /api/categories — every category with how many posts use it
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
     try {
