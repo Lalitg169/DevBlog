@@ -442,6 +442,147 @@ footer a:hover {
     font-style: italic;
 }
 
+/* LIKES */
+.like-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.like-btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--accent-pink);
+}
+
+.like-btn.liked {
+    background: var(--accent-pink);
+    border-color: var(--accent-pink);
+    color: var(--on-primary);
+}
+
+.like-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.like-row .form-message {
+    margin-top: 0;
+}
+
+/* COMMENTS */
+.comments {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+}
+
+.comments h2 {
+    font-size: 24px;
+    color: var(--text-strong);
+    margin-bottom: 20px;
+}
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-strong);
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.comment-form textarea:focus {
+    border-color: var(--primary);
+}
+
+.comment-form textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.comment {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+}
+
+.comment-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.comment-head .author {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.comment-delete {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--accent-pink);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.comment-delete:hover {
+    text-decoration: underline;
+}
+
+.comment-delete:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.comments .list-status {
+    padding: 20px 0;
+    text-align: left;
+}
+
 /* FORM MESSAGES */
 .form-message {
     margin-top: 16px;
@@ -522,5 +663,9 @@ footer a:hover {
 
     .post-article h1 {
         font-size: 28px;
+    }
+
+    .comments {
+        padding: 0 20px 60px;
     }
 }

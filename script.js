@@ -146,7 +146,7 @@ if (postList) {
         if (state.q) params.set('q', state.q);
 
         try {
-            const data = await api(`/posts?${params}`);
+            const data = await api(`/posts?${params}`, { withAuth: true });
             postList.innerHTML = data.posts.map(cardHtml).join('');
             state.totalPages = Math.max(data.pagination.totalPages, 1);
 

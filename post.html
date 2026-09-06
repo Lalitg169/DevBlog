@@ -26,7 +26,23 @@
 
     <main>
         <p class="list-status" id="post-status">Loading post…</p>
+
         <article class="post-article" id="post-article" hidden></article>
+
+        <section class="comments" id="comments" hidden>
+            <h2>Comments (<span id="comment-count">0</span>)</h2>
+
+            <form class="comment-form" id="comment-form" hidden>
+                <textarea id="comment-content" rows="3" maxlength="1000" placeholder="Add a comment…" required></textarea>
+                <button type="submit" class="btn btn-small">Post comment</button>
+            </form>
+
+            <p class="muted" id="comment-hint" hidden><a href="login.html">Log in</a> to join the conversation.</p>
+            <p class="form-message" id="comment-message"></p>
+
+            <p class="list-status" id="comment-status">Loading comments…</p>
+            <ul class="comment-list" id="comment-list"></ul>
+        </section>
     </main>
 
     <!-- FOOTER -->
@@ -47,7 +63,14 @@
     <script src="script.js"></script>
     <script>
         const article = document.querySelector('#post-article');
-        const status = document.querySelector('#post-status');
+        const postStatus = document.querySelector('#post-status');
+        const commentsSection = document.querySelector('#comments');
+        const commentList = document.querySelector('#comment-list');
+        const commentStatus = document.querySelector('#comment-status');
+        const commentForm = document.querySelector('#comment-form');
+        const commentHint = document.querySelector('#comment-hint');
+        const commentMessage = document.querySelector('#comment-message');
+        const commentCount = document.querySelector('#comment-count');
         const postId = new URLSearchParams(window.location.search).get('id');
 
         function paragraphs(content) {
@@ -58,14 +81,122 @@
                 .join('');
         }
 
+        /* LIKES */
+        function setLikeState(liked, count) {
+            const btn = document.querySelector('#like-btn');
+            btn.classList.toggle('liked', Boolean(liked));
+            btn.setAttribute('aria-pressed', String(Boolean(liked)));
+            btn.querySelector('#like-count').textContent = count;
+        }
+
+        async function toggleLike() {
+            const btn = document.querySelector('#like-btn');
+            const note = document.querySelector('#like-note');
+
+            if (!auth.token) {
+                note.innerHTML = '<a href="login.html">Log in</a> to like this post.';
+                return;
+            }
+
+            note.textContent = '';
+            btn.disabled = true;
+            try {
+                const data = await api(`/posts/${encodeURIComponent(postId)}/like`, { method: 'POST', withAuth: true });
+                setLikeState(data.liked, data.like_count);
+            } catch (err) {
+                note.textContent = err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        /* COMMENTS */
+        function commentHtml(comment) {
+            const user = auth.user;
+            const canDelete = user && user.id === comment.user_id;
+            return `
+                <li class="comment" data-id="${comment.id}">
+                    <div class="comment-head">
+                        <span class="author">${escapeHtml(comment.author)}</span>
+                        <time datetime="${escapeHtml(comment.created_at)}">${formatDate(comment.created_at)}</time>
+                        ${canDelete ? '<button type="button" class="comment-delete">Delete</button>' : ''}
+                    </div>
+                    <p>${escapeHtml(comment.content).replace(/\n/g, '<br>')}</p>
+                </li>`;
+        }
+
+        function renderComments(comments) {
+            commentList.innerHTML = comments.map(commentHtml).join('');
+            commentCount.textContent = comments.length;
+            commentStatus.hidden = comments.length > 0;
+            if (comments.length === 0) commentStatus.textContent = 'No comments yet. Start the conversation.';
+        }
+
+        async function loadComments() {
+            try {
+                const { comments } = await api(`/posts/${encodeURIComponent(postId)}/comments`);
+                renderComments(comments);
+            } catch (err) {
+                commentStatus.hidden = false;
+                commentStatus.textContent = err.message;
+            }
+        }
+
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const field = document.querySelector('#comment-content');
+            const content = field.value.trim();
+            if (!content) return;
+
+            const submitBtn = commentForm.querySelector('button[type="submit"]');
+            commentMessage.className = 'form-message';
+            submitBtn.disabled = true;
+
+            try {
+                await api(`/posts/${encodeURIComponent(postId)}/comments`, {
+                    method: 'POST',
+                    withAuth: true,
+                    body: { content },
+                });
+                field.value = '';
+                await loadComments();
+            } catch (err) {
+                commentMessage.classList.add('error');
+                commentMessage.textContent = err.message;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        commentList.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.comment-delete');
+            if (!btn) return;
+
+            const id = btn.closest('.comment').dataset.id;
+            commentMessage.className = 'form-message';
+            btn.disabled = true;
+
+            try {
+                await api(`/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    withAuth: true,
+                });
+                await loadComments();
+            } catch (err) {
+                commentMessage.classList.add('error');
+                commentMessage.textContent = err.message;
+                btn.disabled = false;
+            }
+        });
+
         async function loadPost() {
             if (!postId) {
-                status.textContent = 'No post selected.';
+                postStatus.textContent = 'No post selected.';
                 return;
             }
 
             try {
-                const { post } = await api(`/posts/${encodeURIComponent(postId)}`);
+                const { post } = await api(`/posts/${encodeURIComponent(postId)}`, { withAuth: true });
                 document.title = `${post.title} — DevBlog`;
 
                 article.innerHTML = `
@@ -75,17 +206,29 @@
                     <div class="article-meta">
                         <span class="author">${escapeHtml(post.author)}</span>
                         <time datetime="${escapeHtml(post.created_at)}">${formatDate(post.created_at)}</time>
-                        <span>${post.like_count} likes</span>
-                        <span>${post.comment_count} comments</span>
                     </div>
                     <img class="cover" src="${escapeHtml(coverFor(post))}" alt="">
                     <div class="post-body">${paragraphs(post.content)}</div>
+                    <div class="like-row">
+                        <button type="button" class="like-btn" id="like-btn" aria-pressed="false">
+                            <span aria-hidden="true">&hearts;</span> <span id="like-count">0</span>
+                        </button>
+                        <span class="form-message" id="like-note"></span>
+                    </div>
                 `;
 
-                status.hidden = true;
+                setLikeState(post.liked, post.like_count);
+                document.querySelector('#like-btn').addEventListener('click', toggleLike);
+
+                postStatus.hidden = true;
                 article.hidden = false;
+                commentsSection.hidden = false;
+                commentForm.hidden = !auth.token;
+                commentHint.hidden = Boolean(auth.token);
+
+                loadComments();
             } catch (err) {
-                status.textContent = err.message;
+                postStatus.textContent = err.message;
             }
         }
 
