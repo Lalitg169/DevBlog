@@ -11,6 +11,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const ALLOWED_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, uploadDir),
@@ -22,7 +23,7 @@ const storage = multer.diskStorage({
 
 function fileFilter(_req: Request, file: Express.Multer.File, cb: FileFilterCallback): void {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    if (!ALLOWED_EXTENSIONS.includes(ext) || !ALLOWED_MIME_TYPES.includes(file.mimetype)) {
         cb(new Error('Only image files are allowed (png, jpg, jpeg, gif, webp).'));
         return;
     }

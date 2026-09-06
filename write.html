@@ -71,6 +71,8 @@
         const writeForm = document.querySelector('#write-form');
         const writeMessage = document.querySelector('#write-message');
 
+        const publishBtn = writeForm.querySelector('button[type="submit"]');
+
         writeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const token = localStorage.getItem('token');
@@ -80,9 +82,11 @@
                 return;
             }
 
-            const title = document.querySelector('#title').value;
-            const category = document.querySelector('#category').value;
+            const title = document.querySelector('#title').value.trim();
+            const category = document.querySelector('#category').value.trim();
+            const content = document.querySelector('#content').value;
 
+            publishBtn.disabled = true;
             try {
                 const res = await fetch(`${API_BASE}/posts`, {
                     method: 'POST',
@@ -90,7 +94,7 @@
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ title, category }),
+                    body: JSON.stringify({ title, category, content }),
                 });
                 const data = await res.json();
 
@@ -103,6 +107,8 @@
                 writeForm.reset();
             } catch (err) {
                 writeMessage.textContent = 'Could not reach the server.';
+            } finally {
+                publishBtn.disabled = false;
             }
         });
     </script>

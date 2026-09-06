@@ -57,9 +57,10 @@ interface HttpError extends Error {
 
 app.use((err: HttpError, _req: Request, res: Response, _next: NextFunction) => {
     console.error(err);
-    res.status(err.statusCode || 500).json({
+    const status = err.statusCode || 500;
+    res.status(status).json({
         success: false,
-        error: err.message || 'Internal Server Error',
+        error: status >= 500 ? 'Internal Server Error' : err.message || 'Request failed',
     });
 });
 
