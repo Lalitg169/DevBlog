@@ -8,7 +8,7 @@ The backend is an Express API written in TypeScript, backed by PostgreSQL.
 
 - **Backend:** Node.js, Express 5, TypeScript, PostgreSQL (`pg`)
 - **Auth:** JWT bearer tokens, bcrypt password hashing
-- **Frontend:** static HTML/CSS/JS (`index.html`, `login.html`, `write.html`)
+- **Frontend:** static HTML/CSS/JS (`index.html`, `post.html`, `login.html`, `write.html`)
 
 ## Getting started
 
@@ -70,6 +70,21 @@ All responses are JSON and carry a `success` flag. Protected routes expect an
 
 Posts accept either `category_id` or a `category` name, which is created on
 demand if it does not exist yet.
+
+## Frontend
+
+Serve the HTML files with any static server. They call the API at
+`http://localhost:5000/api`, set once as `API_BASE` in `script.js`.
+
+| Page | What it does |
+| --- | --- |
+| `index.html` | Post feed from `GET /api/posts` — search, sort, pagination |
+| `post.html?id=<id>` | A single post |
+| `login.html` | Login and registration, in one form |
+| `write.html` | Publish a post, then redirect to it |
+
+`script.js` is shared by every page: it holds `API_BASE`, the `api()` fetch
+wrapper, token storage, and the nav's logged-in state.
 
 ## Notes
 

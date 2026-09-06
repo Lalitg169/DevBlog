@@ -16,10 +16,10 @@
         <button id="menu-btn" class="menu-btn">&#9776;</button>
         <nav>
             <ul>
-                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html">Home</a></li>
                 <li><a href="index.html#explore">Explore</a></li>
                 <li><a href="write.html">Write</a></li>
-                <li><a href="login.html">Login</a></li>
+                <li id="nav-auth"><a href="login.html">Login</a></li>
             </ul>
         </nav>
     </header>
@@ -35,7 +35,7 @@
         <section class="form-section">
             <form id="write-form" class="post-form">
                 <label for="title">Title</label>
-                <input type="text" id="title" name="title" placeholder="Post title" required>
+                <input type="text" id="title" name="title" placeholder="Post title" maxlength="200" required>
 
                 <label for="category">Category</label>
                 <input type="text" id="category" name="category" placeholder="e.g. Technology" required>
@@ -44,8 +44,9 @@
                 <textarea id="content" name="content" rows="8" placeholder="Write your post..."></textarea>
 
                 <button type="submit" class="btn">Publish Post</button>
+
+                <p class="form-message" id="write-message"></p>
             </form>
-            <p id="write-message"></p>
         </section>
 
     </main>
@@ -67,18 +68,21 @@
 
     <script src="script.js"></script>
     <script>
-        const API_BASE = 'http://localhost:5000/api';
         const writeForm = document.querySelector('#write-form');
         const writeMessage = document.querySelector('#write-message');
-
         const publishBtn = writeForm.querySelector('button[type="submit"]');
+
+        if (!auth.token) {
+            writeMessage.className = 'form-message error';
+            writeMessage.innerHTML = 'Please <a href="login.html">log in</a> before publishing a post.';
+        }
 
         writeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const token = localStorage.getItem('token');
 
-            if (!token) {
-                writeMessage.textContent = 'Please log in before publishing a post.';
+            if (!auth.token) {
+                writeMessage.className = 'form-message error';
+                writeMessage.innerHTML = 'Please <a href="login.html">log in</a> before publishing a post.';
                 return;
             }
 
@@ -86,27 +90,23 @@
             const category = document.querySelector('#category').value.trim();
             const content = document.querySelector('#content').value;
 
+            writeMessage.className = 'form-message';
             publishBtn.disabled = true;
+
             try {
-                const res = await fetch(`${API_BASE}/posts`, {
+                const data = await api('/posts', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ title, category, content }),
+                    withAuth: true,
+                    body: { title, category, content },
                 });
-                const data = await res.json();
 
-                if (!data.success) {
-                    writeMessage.textContent = data.error || 'Could not publish post.';
-                    return;
-                }
-
-                writeMessage.textContent = 'Post published!';
+                writeMessage.classList.add('success');
+                writeMessage.textContent = 'Post published! Taking you there…';
                 writeForm.reset();
+                window.location.href = `post.html?id=${encodeURIComponent(data.post.id)}`;
             } catch (err) {
-                writeMessage.textContent = 'Could not reach the server.';
+                writeMessage.classList.add('error');
+                writeMessage.textContent = err.message;
             } finally {
                 publishBtn.disabled = false;
             }

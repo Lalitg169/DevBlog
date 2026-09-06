@@ -11,14 +11,14 @@
 <body>
 
     <header>
-        <a href="#" class="logo">DevBlog</a>
+        <a href="index.html" class="logo">DevBlog</a>
         <button id="menu-btn" class="menu-btn">&#9776;</button>
         <nav>
             <ul>
-                <li><a href="#home">Home</a></li>
+                <li><a href="index.html">Home</a></li>
                 <li><a href="#explore">Explore</a></li>
                 <li><a href="write.html">Write</a></li>
-                <li><a href="login.html">Login</a></li>
+                <li id="nav-auth"><a href="login.html">Login</a></li>
             </ul>
         </nav>
     </header>
@@ -28,45 +28,28 @@
         <section class="hero">
             <h1>Welcome to DevBlog</h1>
             <p>Share your stories, ideas, and knowledge with the world</p>
-            <input type="text" id="search-input" placeholder="Search posts by title, category, or author...">
+            <input type="text" id="search-input" placeholder="Search posts by title or content...">
         </section>
 
-        <section class="featured-posts">
-            <h2>Featured Posts</h2>
+        <section class="featured-posts" id="explore">
+            <h2>Latest Posts</h2>
 
-            <article class="post-card">
-                <img src="https://picsum.photos/400/250?random=1" alt="Post Thumbnail">
-                <span class="category">Technology</span>
-                <h3>Advanced Algorithms</h3>
-                <p>A subject of the post</p>
-                <div class="post-meta">
-                    <span class="author">Author Name</span>
-                    <time datetime="2026-08-21">Aug 20, 2026</time>
-                </div>
-            </article>
+            <div class="toolbar">
+                <label for="sort-select">Sort by</label>
+                <select id="sort-select">
+                    <option value="latest">Newest</option>
+                    <option value="popular">Most liked</option>
+                </select>
+            </div>
 
-            <article class="post-card">
-                <img src="https://picsum.photos/400/250?random=2" alt="Post Thumbnail">
-                <span class="category">Finance</span>
-                <h3>How AI is changing Finance</h3>
-                <p>A subject of the post</p>
-                <div class="post-meta">
-                    <span class="author">Author Name</span>
-                    <time datetime="2026-08-21">Aug 20, 2026</time>
-                </div>
-            </article>
+            <p class="list-status" id="post-status">Loading posts…</p>
+            <div class="post-list" id="post-list"></div>
 
-            <article class="post-card">
-                <img src="https://picsum.photos/400/250?random=3" alt="Post Thumbnail">
-                <span class="category">Language</span>
-                <h3>Learn French</h3>
-                <p>A subject of the post</p>
-                <div class="post-meta">
-                    <span class="author">Author Name</span>
-                    <time datetime="2026-08-21">Aug 20, 2026</time>
-                </div>
-            </article>
-
+            <nav class="pagination" id="pagination" hidden>
+                <button type="button" class="btn btn-small" id="prev-page">Previous</button>
+                <span id="page-info"></span>
+                <button type="button" class="btn btn-small" id="next-page">Next</button>
+            </nav>
         </section>
 
     </main>
