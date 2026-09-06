@@ -7,7 +7,12 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:up": "docker compose -f ../docker-compose.yml up -d",
+    "db:down": "docker compose -f ../docker-compose.yml down",
+    "db:reset": "docker compose -f ../docker-compose.yml down -v && docker compose -f ../docker-compose.yml up -d",
+    "db:schema": "psql \"$DATABASE_URL\" -f schema.sql",
+    "seed": "tsx src/seed.ts"
   },
   "keywords": [],
   "author": "",

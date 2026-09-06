@@ -1,7 +1,17 @@
 import { Pool, QueryResultRow } from 'pg';
 
-export const pool = new Pool(
-    process.env.DATABASE_URL
+// Hosted Postgres (Neon, Supabase, Render) serves a certificate that is not in
+// Node's default trust store, so verification is relaxed for those. Supply a CA
+// via PGSSLROOTCERT and set DATABASE_SSL=false to verify properly instead.
+function sslConfig(): false | { rejectUnauthorized: boolean } {
+    if (process.env.DATABASE_SSL === 'false') return false;
+    const requestedInUrl = /[?&]sslmode=require/.test(process.env.DATABASE_URL ?? '');
+    if (process.env.DATABASE_SSL === 'true' || requestedInUrl) return { rejectUnauthorized: false };
+    return false;
+}
+
+export const pool = new Pool({
+    ...(process.env.DATABASE_URL
         ? { connectionString: process.env.DATABASE_URL }
         : {
               host: process.env.PGHOST,
@@ -9,8 +19,18 @@ export const pool = new Pool(
               user: process.env.PGUSER,
               password: process.env.PGPASSWORD,
               database: process.env.PGDATABASE,
-          }
-);
+          }),
+    ssl: sslConfig(),
+    max: Number(process.env.PGPOOL_MAX) || 10,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 10_000,
+});
+
+// A dropped idle connection emits on the pool, not on any query. Without a
+// listener Node treats it as an unhandled 'error' event and exits.
+pool.on('error', (err) => {
+    console.error('Unexpected idle client error', err);
+});
 
 /** Run a query and return every row. */
 export async function all<T extends QueryResultRow>(sql: string, params: unknown[] = []): Promise<T[]> {

@@ -12,12 +12,32 @@ The backend is an Express API written in TypeScript, backed by PostgreSQL.
 
 ## Getting started
 
+Needs Node 20+ and Docker. The database runs in a container on host port
+**5433**, so it will not collide with a Postgres already listening on 5432.
+
 ```bash
 cd server
 npm install
-cp .env.example .env      # then fill in DATABASE_URL and JWT_SECRET
-psql "$DATABASE_URL" -f schema.sql
-npm run dev               # or: npm run build && npm start
+cp .env.example .env       # then set JWT_SECRET
+npm run db:up              # starts Postgres and applies schema.sql
+npm run seed               # 50 sample posts, users author1..author8 / password123
+npm run dev
+```
+
+No Docker? A helper script runs Postgres in userspace instead — no container,
+no root, its own cluster on the same port 5433:
+
+```bash
+./scripts/dev-db.sh start     # initialises, starts, applies schema
+./scripts/dev-db.sh psql      # open a shell against it
+./scripts/dev-db.sh destroy   # remove it entirely
+```
+
+The API is then on `http://localhost:5000`. Serve the project root with any
+static server for the frontend:
+
+```bash
+python3 -m http.server 8000
 ```
 
 | Script | What it does |
@@ -26,6 +46,20 @@ npm run dev               # or: npm run build && npm start
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm start` | Run the compiled server |
 | `npm run typecheck` | Type check without emitting |
+| `npm run db:up` | Start the Postgres container |
+| `npm run db:down` | Stop it, keeping the data volume |
+| `npm run db:reset` | Destroy the volume and start clean |
+| `npm run db:schema` | Apply `schema.sql` to `$DATABASE_URL` |
+| `npm run seed` | Populate sample data (`-- --posts=100000 --fresh`) |
+
+### Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Postgres connection string |
+| `DATABASE_SSL` | `true` for hosted Postgres (Neon, Supabase, Render) |
+| `JWT_SECRET` | Token signing key — `openssl rand -hex 32` |
+| `PORT` | API port, defaults to 5000 |
 
 ## API
 
