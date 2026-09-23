@@ -118,8 +118,9 @@ if (postList) {
     const nextBtn = document.querySelector('#next-page');
     const searchInput = document.querySelector('#search-input');
     const sortSelect = document.querySelector('#sort-select');
+    const categorySelect = document.querySelector('#category-select');
 
-    const state = { page: 1, q: '', sort: 'latest', totalPages: 1 };
+    const state = { page: 1, q: '', sort: 'latest', category: '', totalPages: 1 };
 
     function cardHtml(post) {
         const excerpt = post.content ? `${post.content.slice(0, 140)}${post.content.length > 140 ? '…' : ''}` : '';
@@ -137,6 +138,41 @@ if (postList) {
             </a>`;
     }
 
+    function selectedCategoryName() {
+        if (!state.category || !categorySelect) return '';
+        const option = categorySelect.querySelector(`option[value="${state.category}"]`);
+        return option ? option.dataset.name || '' : '';
+    }
+
+    function emptyMessage() {
+        const name = selectedCategoryName();
+        if (state.q && name) return `No posts in ${name} match \u201c${state.q}\u201d.`;
+        if (state.q) return `No posts match \u201c${state.q}\u201d.`;
+        if (name) return `No posts filed under ${name} yet.`;
+        return 'No posts yet. Be the first to write one.';
+    }
+
+    // The filter is a progressive enhancement: if the categories request fails
+    // the select simply stays disabled on "All categories" and the list works on.
+    async function loadCategories() {
+        if (!categorySelect) return;
+
+        try {
+            const { categories } = await api('/categories');
+            const options = categories
+                .filter((category) => category.post_count > 0)
+                .map(
+                    (category) =>
+                        `<option value="${escapeHtml(category.id)}" data-name="${escapeHtml(category.name)}">` +
+                        `${escapeHtml(category.name)} (${category.post_count})</option>`
+                )
+                .join('');
+            categorySelect.insertAdjacentHTML('beforeend', options);
+        } catch {
+            categorySelect.disabled = true;
+        }
+    }
+
     async function loadPosts() {
         statusEl.hidden = false;
         statusEl.textContent = 'Loading posts…';
@@ -144,6 +180,7 @@ if (postList) {
 
         const params = new URLSearchParams({ page: String(state.page), limit: '9', sort: state.sort });
         if (state.q) params.set('q', state.q);
+        if (state.category) params.set('category', state.category);
 
         try {
             const data = await api(`/posts?${params}`, { withAuth: true });
@@ -151,7 +188,7 @@ if (postList) {
             state.totalPages = Math.max(data.pagination.totalPages, 1);
 
             if (data.posts.length === 0) {
-                statusEl.textContent = state.q ? `No posts match “${state.q}”.` : 'No posts yet. Be the first to write one.';
+                statusEl.textContent = emptyMessage();
             } else {
                 statusEl.hidden = true;
             }
@@ -188,6 +225,14 @@ if (postList) {
         });
     }
 
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            state.category = categorySelect.value;
+            state.page = 1;
+            loadPosts();
+        });
+    }
+
     prevBtn.addEventListener('click', () => {
         if (state.page > 1) {
             state.page -= 1;
@@ -202,6 +247,7 @@ if (postList) {
         }
     });
 
+    loadCategories();
     loadPosts();
 }
 
