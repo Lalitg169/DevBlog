@@ -62,6 +62,7 @@ python3 -m http.server 8000
 | `JWT_SECRET` | Token signing key — `openssl rand -hex 32` |
 | `PORT` | API port, defaults to 5000 |
 | `TRUST_PROXY` | Reverse-proxy hop count so rate limiting sees the real client IP |
+| `NODE_ENV` | Set to `production` when deployed — withholds the password-reset token |
 
 ## API
 
@@ -132,6 +133,8 @@ wrapper, token storage, and the nav's logged-in state.
 ## Notes
 
 - Rate limiting: 300 requests / 15 min across `/api`, 20 / 15 min on auth routes.
-- Password reset has no mail transport configured, so the token is returned in
-  the response and logged to the console.
+- Password reset has no mail transport configured, so in development the token
+  is returned in the response and logged to the console. With
+  `NODE_ENV=production` it is withheld from both, and the flow needs a mailer
+  before it is usable in a deployment.
 - Uploaded images are written to `server/uploads/` and served from `/uploads`.

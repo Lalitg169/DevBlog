@@ -11,6 +11,7 @@ import { UserRow, PasswordResetRow } from '../types';
 const router = express.Router();
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 // POST /api/auth/register
 router.post(
@@ -141,6 +142,14 @@ router.post(
                 token,
                 expiresAt,
             ]);
+
+            // No mail transport is wired up, so development hands the token back
+            // directly to keep the reset flow testable. In production it must never
+            // leave the server: anyone able to name a user could otherwise read the
+            // token out of the response — or the logs — and take the account over.
+            if (IS_PRODUCTION) {
+                return res.json({ success: true, message: genericMessage });
+            }
 
             console.log(`Password reset requested for "${username}". Reset token: ${token}`);
 
