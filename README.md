@@ -109,8 +109,15 @@ demand if it does not exist yet.
 
 ## Frontend
 
-Serve the HTML files with any static server. They call the API at
-`http://localhost:5000/api`, set once as `API_BASE` in `script.js`.
+Serve the HTML files with any static server. `script.js` works out where the
+API lives at load time, so the same files run locally and deployed:
+
+1. `window.DEVBLOG_API_BASE`, if a page sets it before `script.js` loads
+2. `<meta name="devblog-api-base" content="https://api.example.com/api">`
+3. Otherwise `http://localhost:5000/api` on localhost, and same-origin `/api`
+   anywhere else
+
+Only a frontend hosted on a *different* domain than the API needs the meta tag.
 
 | Page | What it does |
 | --- | --- |

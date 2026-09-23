@@ -1,4 +1,23 @@
-const API_BASE = 'http://localhost:5000/api';
+// Resolved at runtime, since the frontend has no build step to bake a value in.
+// In order of precedence: an explicit window.DEVBLOG_API_BASE set before this
+// file loads, a <meta name="devblog-api-base"> in the page head, then a default
+// of localhost while developing and same-origin /api once deployed.
+const API_BASE = (() => {
+    const trim = (value) => value.trim().replace(/\/+$/, '');
+
+    if (typeof window.DEVBLOG_API_BASE === 'string' && window.DEVBLOG_API_BASE.trim()) {
+        return trim(window.DEVBLOG_API_BASE);
+    }
+
+    const meta = document.querySelector('meta[name="devblog-api-base"]');
+    if (meta && meta.content.trim()) {
+        return trim(meta.content);
+    }
+
+    const host = window.location.hostname;
+    const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '';
+    return isLocal ? 'http://localhost:5000/api' : '/api';
+})();
 
 const auth = {
     get token() {
