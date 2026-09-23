@@ -1,8 +1,9 @@
 # DevBlog
 
-A full stack PERN blogging app — write, browse and discuss posts.
+A full stack blogging app — write, browse and discuss posts.
 
-The backend is an Express API written in TypeScript, backed by PostgreSQL.
+The backend is an Express API written in TypeScript, backed by PostgreSQL. The
+frontend is plain HTML, CSS and JavaScript with no build step and no framework.
 
 ## Stack
 
@@ -60,6 +61,7 @@ python3 -m http.server 8000
 | `DATABASE_SSL` | `true` for hosted Postgres (Neon, Supabase, Render) |
 | `JWT_SECRET` | Token signing key — `openssl rand -hex 32` |
 | `PORT` | API port, defaults to 5000 |
+| `TRUST_PROXY` | Reverse-proxy hop count so rate limiting sees the real client IP |
 
 ## API
 
@@ -112,7 +114,7 @@ Serve the HTML files with any static server. They call the API at
 
 | Page | What it does |
 | --- | --- |
-| `index.html` | Post feed from `GET /api/posts` — search, sort, pagination |
+| `index.html` | Post feed from `GET /api/posts` — search, category filter, sort, pagination |
 | `post.html?id=<id>` | A single post |
 | `login.html` | Login and registration, in one form |
 | `write.html` | Publish a post, then redirect to it |
