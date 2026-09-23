@@ -19,6 +19,17 @@ if (!process.env.JWT_SECRET) {
     process.exit(1);
 }
 
+// Behind a reverse proxy the real client IP arrives in X-Forwarded-For, but
+// req.ip reports the proxy instead. The rate limiter keys on req.ip, so without
+// this every request shares one bucket and the limit applies to the whole site
+// at once. The value is how many proxies sit in front of the app; 0 disables
+// the header entirely. Never set this to `true` on a public deployment — that
+// trusts the whole chain and lets a client forge its own address.
+const TRUST_PROXY = Number(process.env.TRUST_PROXY) || 0;
+if (TRUST_PROXY > 0) {
+    app.set('trust proxy', TRUST_PROXY);
+}
+
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
