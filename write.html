@@ -40,6 +40,11 @@
                 <label for="category">Category</label>
                 <input type="text" id="category" name="category" placeholder="e.g. Technology" required>
 
+                <label for="cover">Cover image <span class="label-hint">optional, max 5 MB</span></label>
+                <input type="file" id="cover" name="cover" accept="image/png,image/jpeg,image/gif,image/webp">
+                <p class="form-message" id="cover-message"></p>
+                <img class="cover-preview" id="cover-preview" alt="Cover image preview" hidden>
+
                 <label for="content">Content</label>
                 <textarea id="content" name="content" rows="8" placeholder="Write your post..."></textarea>
 
@@ -77,6 +82,49 @@
             writeMessage.innerHTML = 'Please <a href="login.html">log in</a> before publishing a post.';
         }
 
+        const coverInput = document.querySelector('#cover');
+        const coverMessage = document.querySelector('#cover-message');
+        const coverPreview = document.querySelector('#cover-preview');
+
+        // Holds the stored path once an upload succeeds, so publishing does not
+        // have to wait on the network a second time.
+        let coverImage = '';
+
+        coverInput.addEventListener('change', async () => {
+            const file = coverInput.files[0];
+
+            coverImage = '';
+            coverPreview.hidden = true;
+            coverMessage.className = 'form-message';
+            coverMessage.textContent = '';
+
+            if (!file) return;
+
+            if (!auth.token) {
+                coverMessage.classList.add('error');
+                coverMessage.textContent = 'Log in before uploading an image.';
+                coverInput.value = '';
+                return;
+            }
+
+            coverMessage.textContent = 'Uploading…';
+            publishBtn.disabled = true;
+
+            try {
+                coverImage = await uploadImage(file);
+                coverPreview.src = assetUrl(coverImage);
+                coverPreview.hidden = false;
+                coverMessage.classList.add('success');
+                coverMessage.textContent = 'Cover uploaded.';
+            } catch (err) {
+                coverMessage.classList.add('error');
+                coverMessage.textContent = err.message;
+                coverInput.value = '';
+            } finally {
+                publishBtn.disabled = false;
+            }
+        });
+
         writeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -97,7 +145,7 @@
                 const data = await api('/posts', {
                     method: 'POST',
                     withAuth: true,
-                    body: { title, category, content },
+                    body: { title, category, content, cover_image: coverImage },
                 });
 
                 writeMessage.classList.add('success');

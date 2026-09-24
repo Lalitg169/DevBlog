@@ -76,8 +76,55 @@ function formatDate(value) {
     return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+// Uploads come back as a server-relative path like /uploads/abc.png, which
+// belongs to the API origin — not necessarily wherever this page is served
+// from. Resolving here keeps the stored value host-free.
+function assetUrl(value) {
+    if (!value) return '';
+    if (/^(https?:)?\/\//i.test(value)) return value;
+    if (!value.startsWith('/')) return value;
+    return new URL(API_BASE, window.location.origin).origin + value;
+}
+
 function coverFor(post) {
-    return post.cover_image || `https://picsum.photos/seed/devblog-${post.id}/400/250`;
+    return assetUrl(post.cover_image) || `https://picsum.photos/seed/devblog-${post.id}/400/250`;
+}
+
+const COVER_MAX_BYTES = 5 * 1024 * 1024;
+const COVER_MIME_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+
+/**
+ * Sends one image to POST /api/upload and returns its stored path. FormData is
+ * posted with raw fetch rather than api(), which serialises bodies as JSON and
+ * would also stomp the multipart boundary Content-Type.
+ */
+async function uploadImage(file) {
+    if (file.size > COVER_MAX_BYTES) {
+        throw new Error('Image must be 5 MB or smaller.');
+    }
+    if (!COVER_MIME_TYPES.includes(file.type)) {
+        throw new Error('Image must be a PNG, JPEG, GIF or WebP.');
+    }
+
+    const body = new FormData();
+    body.append('image', file);
+
+    let res;
+    try {
+        res = await fetch(`${API_BASE}/upload`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${auth.token}` },
+            body,
+        });
+    } catch {
+        throw new Error('Could not reach the server.');
+    }
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !data.success) {
+        throw new Error((data && data.error) || `Upload failed (${res.status}).`);
+    }
+    return data.url;
 }
 
 /* NAV */

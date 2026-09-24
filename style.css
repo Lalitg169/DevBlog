@@ -443,6 +443,35 @@ footer a:hover {
 }
 
 /* LIKES */
+.post-form input[type="file"] {
+    padding: 10px 12px;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.post-form input[type="file"]:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.label-hint {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.cover-preview {
+    margin-top: 12px;
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+}
+
 .owner-actions {
     display: flex;
     flex-wrap: wrap;
