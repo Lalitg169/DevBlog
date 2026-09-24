@@ -443,6 +443,35 @@ footer a:hover {
 }
 
 /* LIKES */
+.owner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 24px;
+}
+
+.btn-danger {
+    background: var(--accent-pink);
+}
+
+.btn-danger:hover {
+    background: #962b57;
+}
+
+.btn-quiet {
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+.btn-quiet:hover {
+    background: var(--border-color);
+}
+
+.article-meta .edited {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
 .like-row {
     display: flex;
     align-items: center;

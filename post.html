@@ -189,6 +189,131 @@
             }
         });
 
+        // The server is the real authority here — it rejects edits and deletes from
+        // anyone but the author. This only decides whether to offer the controls.
+        function isOwner(post) {
+            const me = auth.user;
+            return Boolean(auth.token && me && post.user_id === me.id);
+        }
+
+        function renderPost(post) {
+            document.title = `${post.title} — DevBlog`;
+
+            const ownerActions = isOwner(post)
+                ? `<div class="owner-actions">
+                        <button type="button" class="btn btn-small" id="edit-btn">Edit</button>
+                        <button type="button" class="btn btn-small btn-danger" id="delete-btn">Delete</button>
+                   </div>`
+                : '';
+
+            const edited = post.updated_at && post.updated_at !== post.created_at
+                ? `<span class="edited">edited ${formatDate(post.updated_at)}</span>`
+                : '';
+
+            article.innerHTML = `
+                <p class="back-link"><a href="index.html">&larr; All posts</a></p>
+                ${post.category ? `<span class="category">${escapeHtml(post.category)}</span>` : ''}
+                <h1>${escapeHtml(post.title)}</h1>
+                <div class="article-meta">
+                    <span class="author">${escapeHtml(post.author)}</span>
+                    <time datetime="${escapeHtml(post.created_at)}">${formatDate(post.created_at)}</time>
+                    ${edited}
+                </div>
+                ${ownerActions}
+                <img class="cover" src="${escapeHtml(coverFor(post))}" alt="">
+                <div class="post-body">${paragraphs(post.content)}</div>
+                <div class="like-row">
+                    <button type="button" class="like-btn" id="like-btn" aria-pressed="false">
+                        <span aria-hidden="true">&hearts;</span> <span id="like-count">0</span>
+                    </button>
+                    <span class="form-message" id="like-note"></span>
+                </div>
+            `;
+
+            setLikeState(post.liked, post.like_count);
+            document.querySelector('#like-btn').addEventListener('click', toggleLike);
+
+            if (isOwner(post)) {
+                document.querySelector('#edit-btn').addEventListener('click', () => renderEditForm(post));
+                document.querySelector('#delete-btn').addEventListener('click', () => deletePost(post));
+            }
+        }
+
+        function renderEditForm(post) {
+            article.innerHTML = `
+                <p class="back-link"><a href="index.html">&larr; All posts</a></p>
+                <h1>Edit post</h1>
+                <form class="post-form" id="edit-form">
+                    <label for="edit-title">Title</label>
+                    <input type="text" id="edit-title" maxlength="200" required value="${escapeHtml(post.title)}">
+
+                    <label for="edit-category">Category</label>
+                    <input type="text" id="edit-category" maxlength="50" value="${escapeHtml(post.category || '')}">
+
+                    <label for="edit-cover">Cover image URL</label>
+                    <input type="text" id="edit-cover" value="${escapeHtml(post.cover_image || '')}">
+
+                    <label for="edit-content">Content</label>
+                    <textarea id="edit-content" rows="10">${escapeHtml(post.content || '')}</textarea>
+
+                    <div class="owner-actions">
+                        <button type="submit" class="btn btn-small">Save changes</button>
+                        <button type="button" class="btn btn-small btn-quiet" id="cancel-edit">Cancel</button>
+                    </div>
+                    <p class="form-message" id="edit-message"></p>
+                </form>
+            `;
+
+            const form = document.querySelector('#edit-form');
+            const message = document.querySelector('#edit-message');
+            const save = form.querySelector('button[type="submit"]');
+
+            document.querySelector('#cancel-edit').addEventListener('click', () => renderPost(post));
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                message.className = 'form-message';
+                save.disabled = true;
+
+                const category = document.querySelector('#edit-category').value.trim();
+
+                try {
+                    const { post: updated } = await api(`/posts/${encodeURIComponent(post.id)}`, {
+                        method: 'PUT',
+                        withAuth: true,
+                        body: {
+                            title: document.querySelector('#edit-title').value.trim(),
+                            content: document.querySelector('#edit-content').value,
+                            cover_image: document.querySelector('#edit-cover').value.trim(),
+                            // An empty box clears the category rather than keeping the old one.
+                            ...(category ? { category } : { category_id: null }),
+                        },
+                    });
+                    renderPost(updated);
+                } catch (err) {
+                    message.classList.add('error');
+                    message.textContent = err.message;
+                    save.disabled = false;
+                }
+            });
+        }
+
+        async function deletePost(post) {
+            if (!window.confirm(`Delete “${post.title}”? This cannot be undone.`)) return;
+
+            const btn = document.querySelector('#delete-btn');
+            btn.disabled = true;
+
+            try {
+                await api(`/posts/${encodeURIComponent(post.id)}`, { method: 'DELETE', withAuth: true });
+                window.location.href = 'index.html';
+            } catch (err) {
+                btn.disabled = false;
+                postStatus.hidden = false;
+                postStatus.textContent = err.message;
+            }
+        }
+
         async function loadPost() {
             if (!postId) {
                 postStatus.textContent = 'No post selected.';
@@ -197,28 +322,7 @@
 
             try {
                 const { post } = await api(`/posts/${encodeURIComponent(postId)}`, { withAuth: true });
-                document.title = `${post.title} — DevBlog`;
-
-                article.innerHTML = `
-                    <p class="back-link"><a href="index.html">&larr; All posts</a></p>
-                    ${post.category ? `<span class="category">${escapeHtml(post.category)}</span>` : ''}
-                    <h1>${escapeHtml(post.title)}</h1>
-                    <div class="article-meta">
-                        <span class="author">${escapeHtml(post.author)}</span>
-                        <time datetime="${escapeHtml(post.created_at)}">${formatDate(post.created_at)}</time>
-                    </div>
-                    <img class="cover" src="${escapeHtml(coverFor(post))}" alt="">
-                    <div class="post-body">${paragraphs(post.content)}</div>
-                    <div class="like-row">
-                        <button type="button" class="like-btn" id="like-btn" aria-pressed="false">
-                            <span aria-hidden="true">&hearts;</span> <span id="like-count">0</span>
-                        </button>
-                        <span class="form-message" id="like-note"></span>
-                    </div>
-                `;
-
-                setLikeState(post.liked, post.like_count);
-                document.querySelector('#like-btn').addEventListener('click', toggleLike);
+                renderPost(post);
 
                 postStatus.hidden = true;
                 article.hidden = false;
