@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     id          SERIAL PRIMARY KEY,
     username    VARCHAR(100) UNIQUE NOT NULL,
     password    VARCHAR(255) NOT NULL,
+    email       VARCHAR(255) NOT NULL DEFAULT '',
     bio         TEXT NOT NULL DEFAULT '',
     avatar_url  TEXT NOT NULL DEFAULT '',
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()

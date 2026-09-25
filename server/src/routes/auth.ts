@@ -60,7 +60,7 @@ router.post(
             return res.json({
                 success: true,
                 token: signToken(user),
-                user: { id: user.id, username: user.username, bio: user.bio, avatar_url: user.avatar_url },
+                user: { id: user.id, username: user.username, email: (user as any).email || '', bio: user.bio, avatar_url: user.avatar_url },
             });
         } catch (err) {
             next(err);
@@ -72,7 +72,7 @@ router.post(
 router.get('/me', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await get<Omit<UserRow, 'password'>>(
-            'SELECT id, username, bio, avatar_url, created_at FROM users WHERE id = $1',
+            'SELECT id, username, email, bio, avatar_url, created_at FROM users WHERE id = $1',
             [req.user!.id]
         );
         if (!user) {
@@ -83,6 +83,52 @@ router.get('/me', requireAuth, async (req: Request, res: Response, next: NextFun
         next(err);
     }
 });
+
+// PUT /api/auth/settings — update email and/or password
+router.put(
+    '/settings',
+    requireAuth,
+    [
+        body('email').optional().isEmail().withMessage('Please provide a valid email address.'),
+        body('newPassword').optional().isLength({ min: 6 }).withMessage('New password must be at least 6 characters.'),
+        body('currentPassword').optional().notEmpty(),
+    ],
+    validate,
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email, newPassword, currentPassword } = req.body as {
+                email?: string;
+                newPassword?: string;
+                currentPassword?: string;
+            };
+
+            if (newPassword) {
+                if (!currentPassword) {
+                    return res.status(400).json({ success: false, error: 'Current password is required to set a new password.' });
+                }
+                const user = await get<UserRow>('SELECT * FROM users WHERE id = $1', [req.user!.id]);
+                if (!user || !bcrypt.compareSync(currentPassword, user.password)) {
+                    return res.status(401).json({ success: false, error: 'Current password is incorrect.' });
+                }
+                const hashed = bcrypt.hashSync(newPassword, 10);
+                await run('UPDATE users SET password = $1 WHERE id = $2', [hashed, req.user!.id]);
+            }
+
+            if (email !== undefined) {
+                await run('UPDATE users SET email = $1 WHERE id = $2', [email, req.user!.id]);
+            }
+
+            const updated = await get<Omit<UserRow, 'password'>>(
+                'SELECT id, username, email, bio, avatar_url FROM users WHERE id = $1',
+                [req.user!.id]
+            );
+
+            return res.json({ success: true, user: updated, message: 'Settings updated.' });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
 
 // PUT /api/auth/me — update the signed-in user's profile
 router.put(
