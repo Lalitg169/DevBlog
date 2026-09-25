@@ -144,16 +144,162 @@ function renderAuthNav() {
     const user = auth.user;
     if (!auth.token || !user) {
         slot.innerHTML = '<a href="login.html">Login</a>';
+        // hide profile btn if exists
+        const pb = document.querySelector('#profile-dropdown-btn');
+        if (pb) pb.hidden = true;
         return;
     }
 
-    slot.innerHTML = `<a href="#" id="logout-btn">Logout (${escapeHtml(user.username)})</a>`;
-    slot.querySelector('#logout-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        auth.clear();
-        renderAuthNav();
-        window.location.href = 'index.html';
-    });
+    slot.innerHTML = '';
+    const initial = user.username.charAt(0).toUpperCase();
+
+    // Show the profile button in the header
+    let profileBtn = document.querySelector('#profile-dropdown-btn');
+    if (!profileBtn) {
+        profileBtn = document.createElement('button');
+        profileBtn.id = 'profile-dropdown-btn';
+        profileBtn.className = 'profile-dropdown-btn';
+        profileBtn.type = 'button';
+        document.querySelector('header').appendChild(profileBtn);
+
+        // Dropdown container
+        const dropdown = document.createElement('div');
+        dropdown.id = 'profile-dropdown';
+        dropdown.className = 'profile-dropdown';
+        dropdown.hidden = true;
+        dropdown.innerHTML = `
+            <div class="profile-dropdown-header">
+                <div class="profile-dropdown-avatar">${initial}</div>
+                <div>
+                    <div class="profile-dropdown-name">${escapeHtml(user.username)}</div>
+                    <div class="profile-dropdown-email">${escapeHtml(user.email || 'No email set')}</div>
+                </div>
+            </div>
+            <div class="profile-dropdown-divider"></div>
+            <button type="button" class="profile-dropdown-item" id="dropdown-settings-btn">⚙️ Settings</button>
+            <button type="button" class="profile-dropdown-item profile-dropdown-logout" id="dropdown-logout-btn">🚪 Logout</button>
+        `;
+        document.querySelector('header').appendChild(dropdown);
+
+        // Toggle
+        profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.hidden = !dropdown.hidden;
+        });
+
+        // Close on outside click
+        document.addEventListener('click', () => { dropdown.hidden = true; });
+        dropdown.addEventListener('click', (e) => e.stopPropagation());
+
+        // Logout
+        dropdown.querySelector('#dropdown-logout-btn').addEventListener('click', () => {
+            auth.clear();
+            dropdown.hidden = true;
+            renderAuthNav();
+            window.location.href = 'index.html';
+        });
+
+        // Settings
+        dropdown.querySelector('#dropdown-settings-btn').addEventListener('click', () => {
+            dropdown.hidden = true;
+            openSettingsModal();
+        });
+    }
+
+    profileBtn.innerHTML = `<span class="profile-btn-avatar">${initial}</span><span class="profile-btn-bars">☰</span>`;
+    profileBtn.hidden = false;
+
+    // Update dropdown content
+    const dd = document.querySelector('#profile-dropdown');
+    if (dd) {
+        dd.querySelector('.profile-dropdown-avatar').textContent = initial;
+        dd.querySelector('.profile-dropdown-name').textContent = user.username;
+        dd.querySelector('.profile-dropdown-email').textContent = user.email || 'No email set';
+    }
+}
+
+// Settings modal
+function openSettingsModal() {
+    let modal = document.querySelector('#settings-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'settings-modal';
+        modal.className = 'settings-modal-backdrop';
+        modal.innerHTML = `
+            <div class="settings-modal-box">
+                <div class="settings-modal-header">
+                    <h3>⚙️ Account Settings</h3>
+                    <button type="button" class="settings-modal-close" id="settings-close-btn">&times;</button>
+                </div>
+                <form id="settings-form">
+                    <label for="settings-email">Email Address</label>
+                    <input type="email" id="settings-email" placeholder="you@example.com">
+
+                    <label for="settings-current-pw" style="margin-top:16px;">Current Password</label>
+                    <input type="password" id="settings-current-pw" placeholder="Required to change password">
+
+                    <label for="settings-new-pw">New Password</label>
+                    <input type="password" id="settings-new-pw" placeholder="Min 6 characters">
+
+                    <button type="submit" class="btn" style="margin-top:20px; width:100%; cursor:pointer; border:none; font-family:inherit;">Save Changes</button>
+                    <p class="form-message" id="settings-msg"></p>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Close
+        modal.querySelector('#settings-close-btn').addEventListener('click', () => { modal.hidden = true; });
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
+
+        // Submit
+        modal.querySelector('#settings-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgEl = modal.querySelector('#settings-msg');
+            const email = modal.querySelector('#settings-email').value.trim();
+            const currentPassword = modal.querySelector('#settings-current-pw').value;
+            const newPassword = modal.querySelector('#settings-new-pw').value;
+
+            const payload = {};
+            if (email) payload.email = email;
+            if (newPassword) {
+                payload.newPassword = newPassword;
+                payload.currentPassword = currentPassword;
+            }
+
+            if (Object.keys(payload).length === 0) {
+                msgEl.className = 'form-message error';
+                msgEl.textContent = 'Nothing to update.';
+                return;
+            }
+
+            msgEl.className = 'form-message';
+            msgEl.textContent = 'Saving…';
+
+            try {
+                const data = await api('/auth/settings', { method: 'PUT', body: payload, withAuth: true });
+                auth.save(auth.token, data.user);
+                renderAuthNav();
+                msgEl.className = 'form-message success';
+                msgEl.textContent = 'Settings updated!';
+                modal.querySelector('#settings-current-pw').value = '';
+                modal.querySelector('#settings-new-pw').value = '';
+            } catch (err) {
+                msgEl.className = 'form-message error';
+                msgEl.textContent = err.message;
+            }
+        });
+    }
+
+    // Pre-fill
+    const user = auth.user;
+    if (user) {
+        modal.querySelector('#settings-email').value = user.email || '';
+    }
+    modal.querySelector('#settings-msg').textContent = '';
+    modal.querySelector('#settings-current-pw').value = '';
+    modal.querySelector('#settings-new-pw').value = '';
+    modal.hidden = false;
 }
 
 // Confirms the stored token is still valid; a token is only discarded when the
