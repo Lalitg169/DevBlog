@@ -110,6 +110,55 @@
             }
         }
 
+        /* SHARE / COPY LINK */
+        async function handleShare(post) {
+            const shareBtn = document.querySelector('#share-btn');
+            const shareLabel = document.querySelector('#share-label');
+            const shareUrl = window.location.href;
+            const shareData = {
+                title: post.title ? `${post.title} — DevBlog` : 'DevBlog',
+                text: `Read "${post.title || 'this post'}" on DevBlog:`,
+                url: shareUrl,
+            };
+
+            // Use native share sheet on supported mobile/desktop devices
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                try {
+                    await navigator.share(shareData);
+                    return;
+                } catch (err) {
+                    if (err.name === 'AbortError') return;
+                    console.warn('Web Share failed, falling back to clipboard copy:', err);
+                }
+            }
+
+            // Fallback: Copy link to clipboard
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(shareUrl);
+                } else {
+                    const tempInput = document.createElement('input');
+                    tempInput.value = shareUrl;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                }
+
+                if (shareBtn && shareLabel) {
+                    const originalText = shareLabel.textContent;
+                    shareBtn.classList.add('copied');
+                    shareLabel.textContent = 'Copied! ✓';
+                    setTimeout(() => {
+                        shareBtn.classList.remove('copied');
+                        shareLabel.textContent = originalText;
+                    }, 2000);
+                }
+            } catch (err) {
+                alert('Could not copy link to clipboard: ' + err.message);
+            }
+        }
+
         /* COMMENTS */
         function commentHtml(comment) {
             const user = auth.user;
@@ -226,12 +275,16 @@
                     <button type="button" class="like-btn" id="like-btn" aria-pressed="false">
                         <span aria-hidden="true">&hearts;</span> <span id="like-count">0</span>
                     </button>
+                    <button type="button" class="share-btn" id="share-btn" title="Share this post">
+                        <span aria-hidden="true">&#128279;</span> <span id="share-label">Share</span>
+                    </button>
                     <span class="form-message" id="like-note"></span>
                 </div>
             `;
 
             setLikeState(post.liked, post.like_count);
             document.querySelector('#like-btn').addEventListener('click', toggleLike);
+            document.querySelector('#share-btn').addEventListener('click', () => handleShare(post));
 
             if (isOwner(post)) {
                 document.querySelector('#edit-btn').addEventListener('click', () => renderEditForm(post));

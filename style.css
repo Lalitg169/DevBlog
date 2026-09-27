@@ -546,6 +546,35 @@ footer a:hover {
     margin-top: 0;
 }
 
+.share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.15s ease;
+}
+
+.share-btn:hover {
+    background: var(--surface-hover);
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.share-btn.copied {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: var(--on-primary);
+}
+
 /* COMMENTS */
 .comments {
     max-width: 760px;
