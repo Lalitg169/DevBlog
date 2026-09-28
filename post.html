@@ -81,6 +81,11 @@
                 .join('');
         }
 
+        function readingTime(content) {
+            const words = (content || '').trim().split(/\s+/).filter(Boolean).length;
+            return `${Math.max(1, Math.round(words / 200))} min read`;
+        }
+
         /* LIKES */
         function setLikeState(liked, count) {
             const btn = document.querySelector('#like-btn');
@@ -266,6 +271,7 @@
                 <div class="article-meta">
                     <span class="author">${escapeHtml(post.author)}</span>
                     <time datetime="${escapeHtml(post.created_at)}">${formatDate(post.created_at)}</time>
+                    <span class="reading-time">${readingTime(post.content)}</span>
                     ${edited}
                 </div>
                 ${ownerActions}
