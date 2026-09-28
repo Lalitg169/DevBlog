@@ -618,6 +618,17 @@ footer a:hover {
     color: var(--text-muted);
 }
 
+.comment-counter {
+    align-self: flex-end;
+    margin-top: -8px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.comment-counter.near-limit {
+    color: var(--accent-pink);
+}
+
 .comment-list {
     display: flex;
     flex-direction: column;

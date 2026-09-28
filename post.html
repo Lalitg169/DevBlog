@@ -34,6 +34,7 @@
 
             <form class="comment-form" id="comment-form" hidden>
                 <textarea id="comment-content" rows="3" maxlength="1000" placeholder="Add a comment…" required></textarea>
+                <span class="comment-counter" id="comment-counter" aria-live="polite">0 / 1000</span>
                 <button type="submit" class="btn btn-small">Post comment</button>
             </form>
 
@@ -196,6 +197,18 @@
             }
         }
 
+        const commentField = document.querySelector('#comment-content');
+        const commentCounter = document.querySelector('#comment-counter');
+
+        function updateCommentCounter() {
+            const max = commentField.maxLength;
+            const length = commentField.value.length;
+            commentCounter.textContent = `${length} / ${max}`;
+            commentCounter.classList.toggle('near-limit', length >= max * 0.9);
+        }
+
+        commentField.addEventListener('input', updateCommentCounter);
+
         commentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const field = document.querySelector('#comment-content');
@@ -213,6 +226,7 @@
                     body: { content },
                 });
                 field.value = '';
+                updateCommentCounter();
                 await loadComments();
             } catch (err) {
                 commentMessage.classList.add('error');
