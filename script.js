@@ -137,6 +137,45 @@ if (menuBtn && nav) {
     });
 }
 
+/* THEME */
+// With nothing saved the page follows the system setting; the toggle stores an
+// explicit choice, which the snippet in each page's <head> applies before paint.
+function currentTheme() {
+    const chosen = document.documentElement.dataset.theme;
+    if (chosen) return chosen;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function renderThemeToggle() {
+    const list = document.querySelector('header nav ul');
+    if (!list) return;
+
+    const item = document.createElement('li');
+    item.innerHTML = '<button type="button" class="theme-toggle" id="theme-toggle"></button>';
+    list.appendChild(item);
+
+    const btn = item.querySelector('#theme-toggle');
+    const update = () => {
+        const dark = currentTheme() === 'dark';
+        btn.textContent = dark ? '☀️' : '🌙';
+        btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+        btn.title = btn.getAttribute('aria-label');
+    };
+
+    btn.addEventListener('click', () => {
+        const next = currentTheme() === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        try {
+            localStorage.setItem('theme', next);
+        } catch {}
+        update();
+    });
+
+    update();
+}
+
+renderThemeToggle();
+
 function renderAuthNav() {
     const slot = document.querySelector('#nav-auth');
     if (!slot) return;

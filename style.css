@@ -12,8 +12,62 @@
     --accent-green: #0E7C63;
     --accent-pink: #B4356B;
     --border-color: #DCD3C3;
+    --danger-hover: #962B57;
     --radius: 12px;
     --shadow: 0 4px 20px rgba(28, 26, 23, 0.12);
+}
+
+/* DARK MODE: follows the system unless the toggle has picked a theme */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --primary: #8F86F0;
+        --primary-hover: #A79FF5;
+        --on-primary: #16141F;
+        --bg: #1A1814;
+        --surface: #232019;
+        --surface-hover: #2D2920;
+        --text-strong: #F2EDE3;
+        --text: #D9D2C5;
+        --text-muted: #A39C90;
+        --accent-green: #3FBF9B;
+        --accent-pink: #E9709F;
+        --border-color: #3A352C;
+        --danger-hover: #F08DB4;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        color-scheme: dark;
+    }
+}
+
+:root[data-theme="dark"] {
+    --primary: #8F86F0;
+    --primary-hover: #A79FF5;
+    --on-primary: #16141F;
+    --bg: #1A1814;
+    --surface: #232019;
+    --surface-hover: #2D2920;
+    --text-strong: #F2EDE3;
+    --text: #D9D2C5;
+    --text-muted: #A39C90;
+    --accent-green: #3FBF9B;
+    --accent-pink: #E9709F;
+    --border-color: #3A352C;
+    --danger-hover: #F08DB4;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    color: var(--text-strong);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.theme-toggle:hover {
+    color: var(--primary);
 }
 
 /* RESET & BASE */
@@ -483,7 +537,7 @@ footer a:hover {
 }
 
 .btn-danger:hover {
-    background: #962b57;
+    background: var(--danger-hover);
 }
 
 .btn-quiet {
@@ -794,7 +848,7 @@ footer a:hover {
     height: 28px;
     border-radius: 50%;
     background: var(--primary);
-    color: #fff;
+    color: var(--on-primary);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -837,7 +891,7 @@ footer a:hover {
     height: 40px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary) 0%, var(--accent-green) 100%);
-    color: #fff;
+    color: var(--on-primary);
     display: flex;
     align-items: center;
     justify-content: center;
