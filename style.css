@@ -525,6 +525,10 @@ footer a:hover {
     border: 1px solid var(--border-color);
 }
 
+.cover-preview[hidden] {
+    display: none;
+}
+
 .owner-actions {
     display: flex;
     flex-wrap: wrap;
