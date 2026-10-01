@@ -42,8 +42,9 @@ const COMMENT_SELECT = `
 const viewerId = (req: Request): number => req.user?.id ?? -1;
 
 // `%` and `_` are wildcards in ILIKE, so a search for "100%" or "snake_case"
-// would match far more than typed. Backslash is Postgres's default LIKE escape.
-const escapeLike = (s: string): string => s.replace(/[%_]/g, '\\$&');
+// would match far more than typed. Backslash is Postgres's default LIKE escape,
+// so it is escaped too.
+const escapeLike = (s: string): string => s.replace(/[\\%_]/g, '\\$&');
 
 /** Resolves a category name to an id, creating the category when it is new. */
 async function resolveCategoryByName(name: string): Promise<number> {
