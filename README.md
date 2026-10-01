@@ -108,6 +108,9 @@ All responses are JSON and carry a `success` flag. Protected routes expect an
 Posts accept either `category_id` or a `category` name, which is created on
 demand if it does not exist yet.
 
+`?q` matches title and content, case-insensitive. `%`, `_` and `\` are matched
+literally.
+
 ## Frontend
 
 Serve the HTML files with any static server. `script.js` works out where the
