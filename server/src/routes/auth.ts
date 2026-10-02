@@ -13,6 +13,12 @@ const router = express.Router();
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
+// bcryptjs is pure JavaScript, so its *Sync calls hold the event loop for the
+// whole hash and every other request waits. The async versions hand control
+// back about every 100 ms, so other requests can get in between.
+const BCRYPT_ROUNDS = 10;
+const hashPassword = (password: string): Promise<string> => bcrypt.hash(password, BCRYPT_ROUNDS);
+
 // POST /api/auth/register
 router.post(
     '/register',
@@ -25,7 +31,7 @@ router.post(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { username, password } = req.body as { username: string; password: string };
-            const hashed = bcrypt.hashSync(password, 10);
+            const hashed = await hashPassword(password);
 
             const user = await get<Pick<UserRow, 'id' | 'username'>>(
                 'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username',
@@ -53,7 +59,7 @@ router.post(
             const { username, password } = req.body as { username: string; password: string };
             const user = await get<UserRow>('SELECT * FROM users WHERE username = $1', [username]);
 
-            if (!user || !bcrypt.compareSync(password, user.password)) {
+            if (!user || !(await bcrypt.compare(password, user.password))) {
                 return res.status(401).json({ success: false, error: 'Invalid username or password.' });
             }
 
@@ -107,10 +113,10 @@ router.put(
                     return res.status(400).json({ success: false, error: 'Current password is required to set a new password.' });
                 }
                 const user = await get<UserRow>('SELECT * FROM users WHERE id = $1', [req.user!.id]);
-                if (!user || !bcrypt.compareSync(currentPassword, user.password)) {
+                if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
                     return res.status(401).json({ success: false, error: 'Current password is incorrect.' });
                 }
-                const hashed = bcrypt.hashSync(newPassword, 10);
+                const hashed = await hashPassword(newPassword);
                 await run('UPDATE users SET password = $1 WHERE id = $2', [hashed, req.user!.id]);
             }
 
@@ -224,7 +230,7 @@ router.post(
                 return res.status(400).json({ success: false, error: 'Reset token is invalid or expired.' });
             }
 
-            const hashed = bcrypt.hashSync(password, 10);
+            const hashed = await hashPassword(password);
             await run('UPDATE users SET password = $1 WHERE id = $2', [hashed, reset.user_id]);
             await run('DELETE FROM password_resets WHERE user_id = $1', [reset.user_id]);
 
